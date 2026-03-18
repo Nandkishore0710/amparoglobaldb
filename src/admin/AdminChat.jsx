@@ -1,18 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useContent } from './AdminContext';
 
 export default function AdminChat() {
   const { state, dispatch } = useContent();
+  const [tickets, setTickets] = useState([]);
   const [selectedTicketId, setSelectedTicketId] = useState(null);
   
-  const tickets = state.chatTickets || [];
   const config = state.chatConfig || {
     autoReplyEnabled: true,
     welcomeMessage: '',
     defaultResponse: ''
   };
 
-  const selectedTicket = tickets.find(t => t.id === selectedTicketId);
+  useEffect(() => {
+    fetchTickets();
+    // Poll for new messages every 5 seconds since it's a live chat admin
+    const interval = setInterval(fetchTickets, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchTickets = async () => {
+    try {
+      const res = await fetch('/api/chat');
+      const data = await res.json();
+      if (data.success) {
+        setTickets(data.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch chat tickets:', err);
+    }
+  };
+
+  // We map MongoDB `_id` to `id` for compatibility with the existing UI, 
+  // but since `sessionId` is the actual unique identifier we can use either.
+  // The backend returns MongoDB documents, so they have `_id`. Let's find selected by `_id`.
+  const selectedTicket = tickets.find(t => t._id === selectedTicketId);
 
   const toggleAutoReply = () => {
     dispatch({
@@ -28,14 +50,29 @@ export default function AdminChat() {
     });
   };
 
-  const toggleStatus = (id) => {
-    dispatch({ type: 'TOGGLE_TICKET_STATUS', payload: id });
+  const toggleStatus = async (id, currentStatus) => {
+    const newStatus = currentStatus === 'closed' ? 'active' : 'closed';
+    try {
+      await fetch(`/api/chat?id=${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      setTickets(tickets.map(t => t._id === id ? { ...t, status: newStatus } : t));
+    } catch (err) {
+      console.error('Status update failed:', err);
+    }
   };
 
-  const deleteTicket = (id) => {
+  const deleteTicket = async (id) => {
     if (window.confirm('Are you sure you want to permanently delete this chat history?')) {
-      dispatch({ type: 'DELETE_CHAT_TICKET', payload: id });
-      setSelectedTicketId(null);
+      try {
+        await fetch(`/api/chat?id=${id}`, { method: 'DELETE' });
+        setTickets(tickets.filter(t => t._id !== id));
+        setSelectedTicketId(null);
+      } catch (err) {
+        console.error('Delete failed:', err);
+      }
     }
   };
 
@@ -98,13 +135,13 @@ export default function AdminChat() {
             ) : (
               tickets.map(t => (
                 <div 
-                  key={t.id}
-                  onClick={() => setSelectedTicketId(t.id)}
+                  key={t._id}
+                  onClick={() => setSelectedTicketId(t._id)}
                   style={{
                     padding: '20px 24px',
                     borderBottom: '1px solid #f1f5f9',
                     cursor: 'pointer',
-                    background: selectedTicketId === t.id ? '#f8fafc' : '#fff',
+                    background: selectedTicketId === t._id ? '#f8fafc' : '#fff',
                     borderLeft: t.status === 'active' ? '4px solid var(--a-red)' : '4px solid transparent',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     position: 'relative'
@@ -114,7 +151,7 @@ export default function AdminChat() {
                     <span style={{ 
                       fontWeight: 800, 
                       fontSize: '0.95rem', 
-                      color: selectedTicketId === t.id ? 'var(--a-red)' : '#1e293b', 
+                      color: selectedTicketId === t._id ? 'var(--a-red)' : '#1e293b', 
                       display: 'flex', 
                       alignItems: 'center', 
                       gap: 8,
@@ -178,7 +215,7 @@ export default function AdminChat() {
                       </span>
                     )}
                     <span style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#f8fafc', padding: '4px 12px', borderRadius: '20px', color: '#94a3b8', fontSize: '0.7rem' }}>
-                      ID: {selectedTicket.id}
+                      ID: {selectedTicket._id}
                     </span>
                   </div>
                 </div>
@@ -194,7 +231,7 @@ export default function AdminChat() {
                       padding: '8px 16px',
                       fontSize: '0.85rem'
                     }}
-                    onClick={() => deleteTicket(selectedTicket.id)}
+                    onClick={() => deleteTicket(selectedTicket._id)}
                   >
                     🗑️ Delete
                   </button>
@@ -205,7 +242,7 @@ export default function AdminChat() {
                       fontSize: '0.85rem',
                       fontWeight: 700
                     }}
-                    onClick={() => toggleStatus(selectedTicket.id)}
+                    onClick={() => toggleStatus(selectedTicket._id, selectedTicket.status)}
                   >
                     {selectedTicket.status === 'closed' ? 'Reopen Ticket' : 'Close Ticket'}
                   </button>

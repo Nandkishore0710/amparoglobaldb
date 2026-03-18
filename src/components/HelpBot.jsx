@@ -18,18 +18,29 @@ const HelpBot = () => {
     return id;
   });
 
-  // Check if session already has a ticket (to skip lead form)
-  useEffect(() => {
-    const existingTicket = state.chatTickets.find(t => t.id === sessionId);
-    if (existingTicket) {
-      setShowLeadForm(false);
-    }
-  }, [sessionId, state.chatTickets]);
+  // Local state for chat messages since we moved away from AdminContext for Chat
+  const [messages, setMessages] = useState([
+    { type: 'bot', text: state.chatConfig?.welcomeMessage || "Hello! I'm AMPARO AI Assistant. How can I help you today?", date: new Date().toISOString() }
+  ]);
+  const [ticketExists, setTicketExists] = useState(false);
 
-  const currentTicket = state.chatTickets.find(t => t.id === sessionId);
-  const messages = currentTicket ? currentTicket.messages : [
-    { type: 'bot', text: state.chatConfig?.welcomeMessage || "Hello! I'm AMPARO AI Assistant. How can I help you today?" }
-  ];
+  // Check if session already has a ticket on the backend
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const response = await fetch(`/api/chat?sessionId=${sessionId}`);
+        const data = await response.json();
+        if (data.success && data.data) {
+          setShowLeadForm(false);
+          setTicketExists(true);
+          setMessages(data.data.messages || messages);
+        }
+      } catch (err) {
+        console.error('Failed to fetch session', err);
+      }
+    }
+    checkSession();
+  }, [sessionId]);
 
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef(null);
@@ -54,35 +65,44 @@ const HelpBot = () => {
     const userMsgText = inputValue;
     const userMessage = { type: 'user', text: userMsgText, date: new Date().toISOString() };
     
-    // Save user message to context (with lead info)
-    dispatch({ 
-      type: 'ADD_CHAT_MESSAGE', 
-      payload: { 
-        sessionId, 
-        message: userMessage,
-        customerInfo: customerInfo // This only matters for the first message to create the ticket
-      } 
-    });
-    
+    // Optimistic UI update
+    setMessages(prev => [...prev, userMessage]);
     setInputValue('');
 
     try {
+      // Save message to MongoDB
+      await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId, 
+          message: userMessage,
+          customerInfo: ticketExists ? null : customerInfo
+        })
+      });
+      setTicketExists(true);
+
       if (state.chatConfig?.autoReplyEnabled) {
         await new Promise(resolve => setTimeout(resolve, 800));
         const aiResponse = await generateAIResponse(userMsgText);
         const botMessage = { type: 'bot', text: aiResponse, date: new Date().toISOString() };
         
-        dispatch({ 
-          type: 'ADD_CHAT_MESSAGE', 
-          payload: { sessionId, message: botMessage } 
+        setMessages(prev => [...prev, botMessage]);
+        
+        // Save bot reply to MongoDB
+        await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId, 
+            message: botMessage
+          })
         });
       }
     } catch (error) {
-      const errorMessage = { type: 'bot', text: "Sorry, I encountered an error. Please try again.", date: new Date().toISOString() };
-      dispatch({ 
-        type: 'ADD_CHAT_MESSAGE', 
-        payload: { sessionId, message: errorMessage } 
-      });
+      console.error('Error sending message:', error);
+      const errorMessage = { type: 'bot', text: "Sorry, I encountered an error recording your message.", date: new Date().toISOString() };
+      setMessages(prev => [...prev, errorMessage]);
     }
   };
 
