@@ -7,15 +7,41 @@ export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', service: '', message: '' });
   const [sent, setSent] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+
   const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handleSubmit = e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    dispatch({ 
-      type: 'ADD_MESSAGE', 
-      payload: { ...form, id: Date.now(), date: new Date().toISOString(), read: false } 
-    });
-    setSent(true);
+    setLoading(true);
+    
+    try {
+      const response = await fetch('/api', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(form)
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Still add it to local context for immediate admin view if running locally
+        dispatch({ 
+          type: 'ADD_MESSAGE', 
+          payload: { ...form, id: data.data._id, date: new Date().toISOString(), read: false } 
+        });
+        setSent(true);
+      } else {
+        alert('Failed to send message: ' + (data.message || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('Network error. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -110,9 +136,9 @@ export default function Contact() {
                   <label>Message</label>
                   <textarea name="message" rows="4" placeholder="Tell us about your security needs..." value={form.message} onChange={handleChange} />
                 </div>
-                <button type="submit" className="btn-primary contact__submit">
-                  Send Message
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+                <button type="submit" className="btn-primary contact__submit" disabled={loading}>
+                  {loading ? 'Sending...' : 'Send Message'}
+                  {!loading && <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>}
                 </button>
               </form>
             )}
