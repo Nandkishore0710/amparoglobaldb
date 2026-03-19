@@ -1,0 +1,14 @@
+node_modules
+dist
+.env
+.github
+.vscode
+.git
+.agents
+.agent
+_agents
+_agent
+brain
+brain/*
+logs
+tmp

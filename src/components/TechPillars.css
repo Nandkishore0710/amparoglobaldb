@@ -1,0 +1,245 @@
+/* AMPARO Tech Pillars - Premium Overhaul */
+.tech-pillars {
+  padding: 140px 0;
+  background: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated background glows */
+.tech-pillars__bg-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  filter: blur(120px);
+  z-index: 0;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.tech-pillars__bg-glow--1 {
+  top: -10%;
+  right: -5%;
+  background: radial-gradient(circle, var(--red) 0%, transparent 70%);
+  animation: float-glow 20s infinite alternate;
+}
+
+.tech-pillars__bg-glow--2 {
+  bottom: -10%;
+  left: -5%;
+  background: radial-gradient(circle, #00aaff 0%, transparent 70%);
+  animation: float-glow 25s infinite alternate-reverse;
+}
+
+@keyframes float-glow {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(40px, 40px) scale(1.1); }
+}
+
+.tech-pillars .container {
+  position: relative;
+  z-index: 1;
+}
+
+.tech-pillars__header {
+  text-align: center;
+  margin-bottom: 80px;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.tech__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+}
+
+/* Premium Card Design */
+.tech__card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(232, 25, 44, 0.08);
+  padding: 50px 40px;
+  border-radius: 24px;
+  transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.tech__card:hover {
+  transform: translateY(-12px);
+  border-color: rgba(232, 25, 44, 0.3);
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+}
+
+/* Icon Wrap with Glow */
+.tech__icon-wrap {
+  width: 70px;
+  height: 70px;
+  background: #fdf2f3;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px;
+  position: relative;
+  z-index: 2;
+  transition: all 0.5s ease;
+}
+
+.tech__icon-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  background: var(--red);
+  filter: blur(20px);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: -1;
+}
+
+.tech__card:hover .tech__icon-wrap {
+  background: var(--red);
+  transform: rotate(10deg);
+}
+
+.tech__card:hover .tech__icon-glow {
+  opacity: 0.3;
+}
+
+.tech__icon-emoji {
+  font-size: 2rem;
+  transition: transform 0.3s ease;
+}
+
+.tech__card:hover .tech__icon-emoji {
+  transform: scale(1.1);
+}
+
+.tech__name {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #111;
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+}
+
+.tech__desc {
+  color: #555;
+  line-height: 1.7;
+  margin-bottom: 30px;
+  font-size: 1.05rem;
+}
+
+/* Feature Tags Area */
+.tech__details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.tech__detail-tag {
+  background: #f5f6f8;
+  color: #666;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.tech__detail-dot {
+  width: 6px;
+  height: 6px;
+  background: #cbd5e1;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.tech__card:hover .tech__detail-tag {
+  background: #fdf2f3;
+  color: var(--red);
+}
+
+.tech__card:hover .tech__detail-dot {
+  background: var(--red);
+  box-shadow: 0 0 8px var(--red);
+}
+
+/* Card Decorative Line */
+.tech__card-line {
+  position: absolute;
+  bottom: 0;
+  left: 40px;
+  right: 40px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--red), transparent);
+  border-radius: 2px 2px 0 0;
+  opacity: 0;
+  transform: scaleX(0);
+  transition: all 0.5s ease;
+  transform-origin: left;
+}
+
+.tech__card:hover .tech__card-line {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+@media (max-width: 1024px) {
+  .tech-pillars {
+    padding: 100px 0;
+  }
+  .tech__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .tech__card {
+    padding: 40px 30px;
+  }
+}
+
+@media (max-width: 900px) {
+  .tech__grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .tech-pillars__header {
+    margin-bottom: 50px;
+  }
+  .tech__card {
+    padding: 35px 25px;
+  }
+  .tech__name {
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tech-pillars {
+    padding: 70px 0;
+  }
+  .tech__desc {
+    font-size: 1rem;
+    margin-bottom: 20px;
+  }
+  .tech__icon-wrap {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 20px;
+  }
+}

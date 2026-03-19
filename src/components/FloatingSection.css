@@ -1,0 +1,120 @@
+/* Floating Section Styles */
+.floating-section {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 999;
+  opacity: 0;
+  transform: translateX(-20px) scale(0.9);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  pointer-events: none;
+}
+
+.floating-section--visible {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  pointer-events: auto;
+}
+
+.floating-section__content {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  min-width: 280px;
+  max-width: 320px;
+}
+
+.floating-section__title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #111111;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.floating-section__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.floating-section__item {
+  text-align: center;
+  padding: 16px;
+  border-radius: 12px;
+  background: #f8f9fb;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.floating-section__item:hover {
+  background: var(--red);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(232, 25, 44, 0.2);
+}
+
+.floating-section__item:hover .floating-section__item-title,
+.floating-section__item:hover .floating-section__item-desc {
+  color: #ffffff;
+}
+
+.floating-section__icon {
+  margin-bottom: 12px;
+  color: var(--red);
+  display: flex;
+  justify-content: center;
+}
+
+.floating-section__item-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111111;
+  margin-bottom: 6px;
+}
+
+.floating-section__item-desc {
+  font-size: 0.85rem;
+  color: #555555;
+  line-height: 1.4;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .floating-section {
+    top: 10px;
+    left: 10px;
+  }
+  
+  .floating-section__content {
+    min-width: 240px;
+    max-width: 280px;
+    padding: 20px;
+  }
+  
+  .floating-section__grid {
+    gap: 16px;
+  }
+  
+  .floating-section__item {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .floating-section {
+    top: 10px;
+    left: 10px;
+  }
+  
+  .floating-section__content {
+    min-width: 200px;
+    max-width: 240px;
+    padding: 16px;
+  }
+  
+  .floating-section__title {
+    font-size: 1rem;
+    margin-bottom: 16px;
+  }
+}
