@@ -369,31 +369,68 @@ export default function AdminClientsPanel() {
                       </div>
                     </td>
                     <td style={{ padding: '20px 24px' }}>
-                      {/* Status row */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: statusColor, flexShrink: 0 }} />
-                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: statusColor }}>{client.status}</span>
-                      </div>
+                      {/* Clickable Status Badge */}
+                      <button
+                        onClick={() => {
+                          const cycle = { Active: 'Inactive', Inactive: 'Pending', Pending: 'Active' };
+                          const next = cycle[client.status] || 'Active';
+                          const updated = (state.clients || []).map(c => c.id === client.id ? { ...c, status: next } : c);
+                          dispatch({ type: 'SET_CLIENTS', payload: updated });
+                        }}
+                        title="Click to cycle status"
+                        style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 6,
+                          padding: '4px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                          fontWeight: 700, fontSize: '0.72rem', marginBottom: 10,
+                          background: client.status === 'Active' ? '#dcfce7' : client.status === 'Pending' ? '#fef9c3' : '#f3f4f6',
+                          color: client.status === 'Active' ? '#16a34a' : client.status === 'Pending' ? '#92400e' : '#6b7280',
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        <span style={{
+                          width: 7, height: 7, borderRadius: '50%',
+                          background: client.status === 'Active' ? '#22c55e' : client.status === 'Pending' ? '#f59e0b' : '#9ca3af',
+                          animation: client.status === 'Active' ? 'pulse 1.5s infinite' : 'none'
+                        }} />
+                        {client.status || 'Unknown'} ↻
+                      </button>
+
                       {/* Progress bar */}
-                      <div style={{ marginBottom: 6 }}>
+                      <div style={{ marginBottom: 8 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: '#aaa', marginBottom: 4 }}>
-                          <span>{clientProjects.length > 0 ? `Avg. Completion` : 'Account Health'}</span>
-                          <span style={{ fontWeight: 700, color: '#555' }}>{barWidth}%</span>
+                          <span>{clientProjects.length > 0 ? 'Avg. Completion' : 'Account Health'}</span>
+                          <span style={{ fontWeight: 700, color: barColor }}>{barWidth}%</span>
                         </div>
                         <div style={{ width: '100%', height: 7, background: '#eef0f3', borderRadius: 6, overflow: 'hidden' }}>
                           <div style={{ width: `${barWidth}%`, height: '100%', background: barColor, borderRadius: 6, transition: 'width 0.5s ease' }} />
                         </div>
                       </div>
-                      {/* Project tags */}
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
-                        {clientProjects.length > 0 ? clientProjects.map(p => (
-                          <span key={p.id} style={{ background: '#fef2f2', border: '1px solid #fee2e2', color: 'var(--a-red)', fontSize: '0.63rem', padding: '2px 8px', borderRadius: 4, fontWeight: 600 }}>
-                            🚀 {p.name} · {p.completion}%
-                          </span>
-                        )) : (
-                          <span style={{ color: '#bbb', fontStyle: 'italic', fontSize: '0.72rem' }}>No active projects</span>
-                        )}
-                      </div>
+
+                      {/* Per-project bars */}
+                      {clientProjects.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {clientProjects.map(p => {
+                            const pStatus = p.status || 'Planning';
+                            const pStatusColor = pStatus === 'Completed' ? '#22c55e' : pStatus === 'In Progress' ? '#3b82f6' : pStatus === 'On Hold' ? '#f59e0b' : '#9ca3af';
+                            return (
+                              <div key={p.id} style={{ background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 8, padding: '6px 10px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                                  <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#333' }}>🚀 {p.name}</span>
+                                  <span style={{ fontSize: '0.6rem', fontWeight: 700, color: pStatusColor, background: `${pStatusColor}18`, padding: '1px 6px', borderRadius: 10 }}>{pStatus}</span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                  <div style={{ flex: 1, height: 5, background: '#e5e7eb', borderRadius: 3, overflow: 'hidden' }}>
+                                    <div style={{ width: `${p.completion || 0}%`, height: '100%', background: pStatusColor, transition: 'width 0.4s' }} />
+                                  </div>
+                                  <span style={{ fontSize: '0.62rem', fontWeight: 700, color: pStatusColor, minWidth: 28, textAlign: 'right' }}>{p.completion || 0}%</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <span style={{ color: '#ccc', fontStyle: 'italic', fontSize: '0.7rem' }}>No linked projects</span>
+                      )}
                     </td>
                     <td style={{ padding: '20px 24px' }}>
                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
