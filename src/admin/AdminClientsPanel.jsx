@@ -40,37 +40,50 @@ export default function AdminClientsPanel() {
     setFormData(initialForm);
   };
 
+  const compressImage = (file, maxWidth = 800, quality = 0.8) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          resolve(canvas.toDataURL('image/webp', quality));
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (err) => reject(err);
+    });
+  };
+
   const handleLogoUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      alert("⚠️ File is too large! Please use an image under 5MB.");
-      return;
-    }
-
     setIsUploading(true);
-    const formData = new FormData();
-    formData.append('image', file);
 
     try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      });
-      const data = await response.json();
-
-      if (data.success && data.url) {
-        setFormData(prev => ({ ...prev, logo: data.url }));
-      } else {
-        throw new Error(data.message || 'Upload failed');
-      }
+      const compressedLogo = await compressImage(file, 800, 0.8);
+      setFormData(prev => ({ ...prev, logo: compressedLogo }));
     } catch (err) {
-      console.error("Upload error:", err);
-      alert(`❌ Error uploading logo: ${err.message}.`);
+      console.error("Compression error:", err);
+      alert(`❌ Error uploading logo: ${err.message || 'Unknown error'}`);
     } finally {
       setIsUploading(false);
-      // Reset input so the same file can be selected again if needed
       e.target.value = '';
     }
   };

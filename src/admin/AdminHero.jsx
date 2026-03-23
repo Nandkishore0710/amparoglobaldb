@@ -53,38 +53,51 @@ export default function AdminHero() {
   const addAlert = () => setHeroAlerts(p => [...p, { text: 'New notification', type: 'green' }]);
   const removeAlert = (idx) => setHeroAlerts(p => p.filter((_, i) => i !== idx));
 
+  const compressImage = (file, maxWidth = 1200, quality = 0.8) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Force to WebP for massive compression gains
+          const compressedBase64 = canvas.toDataURL('image/webp', quality);
+          resolve(compressedBase64);
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (err) => reject(err);
+    });
+  };
+
   const handleImageUpload = async (id, file, field = 'bgImage') => {
     if (!file) return;
-    
-    // Check file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      alert("⚠️ File is too large! Please use an image under 5MB.");
-      return;
-    }
 
-    setToast('Uploading image...');
+    setToast('Optimizing and uploading image...');
     
-    const formData = new FormData();
-    formData.append('image', file);
-
     try {
-      // Send to our new local API
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      });
-
-      const data = await response.json();
-
-      if (data.success && data.url) {
-        updateSlide(id, field, data.url);
-        setToast('Image uploaded successfully!');
-      } else {
-        throw new Error(data.message || 'Upload failed');
-      }
+      // Compress heavily on the client side so it perfectly fits in MongoDB
+      const compressedData = await compressImage(file, 1600, 0.75); // Max 1600px wide, 75% WebP quality
+      updateSlide(id, field, compressedData);
+      setToast('Image optimized and saved successfully!');
     } catch (err) {
-      console.error("Upload error:", err);
-      alert(`❌ Error uploading file: ${err.message}. Ensure your backend server is running.`);
+      console.error("Compression/Upload error:", err);
+      alert(`❌ Error processing image: ${err.message || 'Unknown error'}`);
     } finally {
       setTimeout(() => setToast(''), 3000);
     }
@@ -254,7 +267,7 @@ export default function AdminHero() {
                   <div style={{ display: 'flex', gap: 10 }}>
                     <input 
                       className="admin-input" 
-                      value={activeSlide.bgImage || ''} 
+                      value={(activeSlide.bgImage && activeSlide.bgImage.startsWith('data:')) ? '[Local File Uploaded]' : (activeSlide.bgImage || '')} 
                       onChange={e => updateSlide(activeSlide.id, 'bgImage', e.target.value)} 
                       placeholder="URL or upload..." 
                     />
@@ -289,7 +302,7 @@ export default function AdminHero() {
                   <div style={{ display: 'flex', gap: 10 }}>
                     <input 
                       className="admin-input" 
-                      value={activeSlide.visualImage || ''} 
+                      value={(activeSlide.visualImage && activeSlide.visualImage.startsWith('data:')) ? '[Local File Uploaded]' : (activeSlide.visualImage || '')} 
                       onChange={e => updateSlide(activeSlide.id, 'visualImage', e.target.value)} 
                       placeholder="URL or upload..." 
                     />

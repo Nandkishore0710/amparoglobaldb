@@ -4,9 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev:ui": "vite",
-    "dev:api": "node server.js",
-    "dev": "concurrently \"npm run dev:api\" \"npm run dev:ui\"",
+    "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
