@@ -15,6 +15,7 @@ import AdminEcommerce from './AdminEcommerce';
 import AdminProjects from './AdminProjects';
 import AdminMessages from './AdminMessages';
 import AdminClients from './AdminClients';
+import AdminClientsPanel from './AdminClientsPanel';
 import AdminChat from './AdminChat';
 import AdminSecurity from './AdminSecurity';
 import AdminTestimonials from './AdminTestimonials';
@@ -33,9 +34,10 @@ const PAGE_TITLES = {
   '/admin/ecommerce': 'Ecommerce Store',
   '/admin/projects': 'Project Tracking',
   '/admin/messages': 'Client Inquiries',
-  '/admin/clients':  'Client Logos',
-  '/admin/chat':     'Live Chat Support',
-  '/admin/testimonials': 'Client Testimonials',
+  '/admin/clients':       'Client Logos',
+  '/admin/client-panel':  'Client Ecosystem',
+  '/admin/chat':          'Live Chat Support',
+  '/admin/testimonials':  'Client Testimonials',
 };
 
 export default function AdminApp() {
@@ -68,8 +70,9 @@ export default function AdminApp() {
         <Route path="ecommerce" element={<AdminEcommerce />} />
         <Route path="projects" element={<AdminProjects />} />
         <Route path="messages" element={<AdminMessages />} />
-        <Route path="clients"  element={<AdminClients />} />
-        <Route path="chat"     element={<AdminChat />} />
+        <Route path="clients"       element={<AdminClients />} />
+        <Route path="client-panel"   element={<AdminClientsPanel />} />
+        <Route path="chat"           element={<AdminChat />} />
         <Route path="security" element={<AdminSecurity />} />
         <Route path="testimonials" element={<AdminTestimonials />} />
         <Route path="*"        element={<Navigate to="/admin" replace />} />
