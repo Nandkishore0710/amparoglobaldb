@@ -398,12 +398,30 @@ export function AdminProvider({ children }) {
     // 2. Debounced save to MongoDB
     const timeout = setTimeout(async () => {
       try {
+        // Strip base64 strings to prevent MongoDB 16MB document limit crashes
+        const cleanState = JSON.parse(JSON.stringify(state));
+        if (cleanState.slides) {
+          cleanState.slides = cleanState.slides.map(s => {
+            const cleanSlide = { ...s };
+            if (cleanSlide.bgImage && cleanSlide.bgImage.startsWith('data:image')) cleanSlide.bgImage = '';
+            if (cleanSlide.visualImage && cleanSlide.visualImage.startsWith('data:image')) cleanSlide.visualImage = '';
+            return cleanSlide;
+          });
+        }
+        if (cleanState.clients) {
+            cleanState.clients = cleanState.clients.map(c => {
+                const cleanClient = { ...c };
+                if (cleanClient.logo && cleanClient.logo.startsWith('data:image')) cleanClient.logo = '';
+                return cleanClient;
+            });
+        }
+
         await fetch('/api/content', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(state),
+          body: JSON.stringify(cleanState),
         });
-        console.log("Synced to MongoDB");
+        console.log("Synced to MongoDB (Base64 stripped)");
       } catch (err) {
         console.error("Failed to sync to MongoDB:", err);
       }

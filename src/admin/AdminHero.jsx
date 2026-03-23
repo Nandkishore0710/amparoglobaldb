@@ -53,30 +53,41 @@ export default function AdminHero() {
   const addAlert = () => setHeroAlerts(p => [...p, { text: 'New notification', type: 'green' }]);
   const removeAlert = (idx) => setHeroAlerts(p => p.filter((_, i) => i !== idx));
 
-  const handleImageUpload = (id, file, field = 'bgImage') => {
+  const handleImageUpload = async (id, file, field = 'bgImage') => {
     if (!file) return;
     
-    // Check file size (localStorage limit is ~5MB total)
-    if (file.size > 2 * 1024 * 1024) {
-      alert("⚠️ File is too large! Please use an image under 2MB to ensure it saves correctly.");
+    // Check file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("⚠️ File is too large! Please use an image under 5MB.");
       return;
     }
 
-    const reader = new FileReader();
     setToast('Uploading image...');
     
-    reader.onloadend = () => {
-      updateSlide(id, field, reader.result);
-      setToast('Image uploaded successfully!');
-      setTimeout(() => setToast(''), 2000);
-    };
+    const formData = new FormData();
+    formData.append('image', file);
 
-    reader.onerror = () => {
-      alert("❌ Error reading the file. Please try another image.");
-      setToast('');
-    };
+    try {
+      // Send to our new local API
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
 
-    reader.readAsDataURL(file);
+      const data = await response.json();
+
+      if (data.success && data.url) {
+        updateSlide(id, field, data.url);
+        setToast('Image uploaded successfully!');
+      } else {
+        throw new Error(data.message || 'Upload failed');
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      alert(`❌ Error uploading file: ${err.message}. Ensure your backend server is running.`);
+    } finally {
+      setTimeout(() => setToast(''), 3000);
+    }
   };
 
   const save = () => {
@@ -243,7 +254,7 @@ export default function AdminHero() {
                   <div style={{ display: 'flex', gap: 10 }}>
                     <input 
                       className="admin-input" 
-                      value={(activeSlide.bgImage && activeSlide.bgImage.startsWith('data:')) ? '[Local File Uploaded]' : (activeSlide.bgImage || '')} 
+                      value={activeSlide.bgImage || ''} 
                       onChange={e => updateSlide(activeSlide.id, 'bgImage', e.target.value)} 
                       placeholder="URL or upload..." 
                     />
@@ -278,7 +289,7 @@ export default function AdminHero() {
                   <div style={{ display: 'flex', gap: 10 }}>
                     <input 
                       className="admin-input" 
-                      value={(activeSlide.visualImage && activeSlide.visualImage.startsWith('data:')) ? '[Local File Uploaded]' : (activeSlide.visualImage || '')} 
+                      value={activeSlide.visualImage || ''} 
                       onChange={e => updateSlide(activeSlide.id, 'visualImage', e.target.value)} 
                       placeholder="URL or upload..." 
                     />

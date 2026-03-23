@@ -7,6 +7,7 @@ export default function AdminClientsPanel() {
   const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
+  const [isUploading, setIsUploading] = useState(false);
   
   const initialForm = { 
     name: '', 
@@ -39,14 +40,38 @@ export default function AdminClientsPanel() {
     setFormData(initialForm);
   };
 
-  const handleLogoUpload = (e) => {
+  const handleLogoUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, logo: reader.result }));
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("⚠️ File is too large! Please use an image under 5MB.");
+      return;
+    }
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await response.json();
+
+      if (data.success && data.url) {
+        setFormData(prev => ({ ...prev, logo: data.url }));
+      } else {
+        throw new Error(data.message || 'Upload failed');
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      alert(`❌ Error uploading logo: ${err.message}.`);
+    } finally {
+      setIsUploading(false);
+      // Reset input so the same file can be selected again if needed
+      e.target.value = '';
     }
   };
 
@@ -120,7 +145,12 @@ export default function AdminClientsPanel() {
                   onMouseOut={e => e.currentTarget.style.borderColor = 'var(--a-border)'}
                   onClick={() => document.getElementById('client-logo-upload').click()}
                 >
-                  {formData.logo ? (
+                  {isUploading ? (
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '1.2rem', marginBottom: 4 }}>⏳</div>
+                      <div style={{ fontSize: '0.7rem', color: '#666', fontWeight: 600 }}>Uploading...</div>
+                    </div>
+                  ) : formData.logo ? (
                     <img src={formData.logo} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 12 }} />
                   ) : (
                     <div style={{ textAlign: 'center' }}>
