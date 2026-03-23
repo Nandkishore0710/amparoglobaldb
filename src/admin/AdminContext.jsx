@@ -227,11 +227,11 @@ export const DEFAULT_DATA = {
     { id: 1, name: 'Alex Johnson', email: 'alex@example.com', phone: '+91 99999 88888', service: 'Weapon Detection', message: 'Interested in a demo for our school campus.', date: '2026-03-11T10:30:00Z', read: false },
   ],
   clients: [
-    { id: 1, name: 'TechFlow', company: 'TechFlow Systems', email: 'contact@techflow.io', phone: '+91 98888 77777', status: 'Active', category: 'Enterprise', priority: 'High', joinedDate: '2024-02-12', logo: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&w=200&h=80&q=80', industry: 'Logistics & Supply Chain', address: 'Plot 42, Tech Park, Bangalore, KA, 560066', lastContacted: '2024-03-15' },
-    { id: 2, name: 'SecureNet', company: 'SecureNet Solutions', email: 'admin@securenet.com', phone: '+91 92222 33333', status: 'Active', category: 'Strategic Partner', priority: 'Critical', joinedDate: '2023-11-05', logo: 'https://images.unsplash.com/photo-1599305090598-fe179d501c27?auto=format&fit=crop&w=200&h=80&q=80', industry: 'Healthcare & Pharma', address: 'Suite 101, Medical Plaza, Mumbai, MH, 400012', lastContacted: '2024-03-18' },
-    { id: 3, name: 'AI Global', company: 'Global AI Corp', email: 'info@aiglobal.ai', phone: '+91 91111 22222', status: 'Active', category: 'Enterprise', priority: 'High', joinedDate: '2024-05-20', logo: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=200&h=80&q=80', industry: 'Smart Cities / Gov', address: 'Cyber Tower 2, Gachibowli, Hyderabad, TS, 500032', lastContacted: '2024-03-10' },
-    { id: 4, name: 'Innovate', company: 'Innovate Labs', email: 'labs@innovate.co', phone: '+91 94444 55555', status: 'Pending', category: 'Retail/SMB', priority: 'Medium', joinedDate: '2024-06-15', logo: 'https://placehold.co/200x80/ffffff/E8192C?text=INNOVATE', industry: 'Retail & E-commerce', address: 'Market Lane 8, Pune, MH, 411001', lastContacted: '2024-03-12' },
-    { id: 5, name: 'Core Intel', company: 'Core Intelligence Ltd', email: 'sales@coreintel.com', phone: '+91 97777 88888', status: 'Inactive', category: 'Retail/SMB', priority: 'Low', joinedDate: '2023-08-10', logo: 'https://placehold.co/200x80/ffffff/111111?text=CORE+INTEL', industry: 'Manufacturing & Industrial', address: 'Industrial Zone B, Ahmedabad, GJ, 380001', lastContacted: '2024-02-28' },
+    { id: 1, name: 'TechFlow', logo: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&w=200&h=80&q=80' },
+    { id: 2, name: 'SecureNet', logo: 'https://images.unsplash.com/photo-1599305090598-fe179d501c27?auto=format&fit=crop&w=200&h=80&q=80' },
+    { id: 3, name: 'AI Global', logo: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=200&h=80&q=80' },
+    { id: 4, name: 'Innovate', logo: 'https://placehold.co/200x80/ffffff/E8192C?text=INNOVATE' },
+    { id: 5, name: 'Core Intel', logo: 'https://placehold.co/200x80/ffffff/111111?text=CORE+INTEL' },
   ],
   testimonialSettings: {
     title: 'WHAT OUR CLIENTS SAY?',
