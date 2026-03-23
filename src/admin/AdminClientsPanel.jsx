@@ -18,7 +18,9 @@ export default function AdminClientsPanel() {
     priority: 'Medium',
     logo: '',
     joinedDate: new Date().toISOString().split('T')[0],
-    notes: ''
+    notes: '',
+    progressValue: 50,
+    progressColor: '#E8192C'
   };
   
   const [formData, setFormData] = useState(initialForm);
@@ -218,6 +220,38 @@ export default function AdminClientsPanel() {
               <textarea className="admin-textarea" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} placeholder="Key stakeholders, pain points, or project goals..." style={{ minHeight: 80 }} />
             </div>
 
+            {/* Progress Bar Editor */}
+            <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 12, padding: '16px 20px', marginTop: 4 }}>
+              <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: 14, color: '#374151' }}>📊 Account Health / Progress Bar</div>
+              <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#6b7280', marginBottom: 6 }}>
+                    <span>Progress Value</span>
+                    <strong style={{ color: formData.progressColor || '#E8192C' }}>{formData.progressValue ?? 50}%</strong>
+                  </div>
+                  <input
+                    type="range" min="0" max="100"
+                    value={formData.progressValue ?? 50}
+                    onChange={e => setFormData({...formData, progressValue: Number(e.target.value)})}
+                    style={{ width: '100%', accentColor: formData.progressColor || '#E8192C' }}
+                  />
+                  {/* Live preview */}
+                  <div style={{ height: 8, background: '#e5e7eb', borderRadius: 6, overflow: 'hidden', marginTop: 8 }}>
+                    <div style={{ width: `${formData.progressValue ?? 50}%`, height: '100%', background: formData.progressColor || '#E8192C', borderRadius: 6, transition: 'width 0.3s ease' }} />
+                  </div>
+                </div>
+                <div style={{ textAlign: 'center', flexShrink: 0 }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', color: '#6b7280', marginBottom: 6, fontWeight: 600 }}>Bar Color</label>
+                  <input
+                    type="color"
+                    value={formData.progressColor || '#E8192C'}
+                    onChange={e => setFormData({...formData, progressColor: e.target.value})}
+                    style={{ width: 48, height: 44, border: '2px solid #e5e7eb', borderRadius: 10, cursor: 'pointer', padding: 2 }}
+                  />
+                </div>
+              </div>
+            </div>
+
             <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
               <button type="submit" className="admin-btn admin-btn--primary">
                 {editingId ? '↻ Update Profile' : '✅ Finalize Registration'}
@@ -302,8 +336,8 @@ export default function AdminClientsPanel() {
                   ? Math.round(clientProjects.reduce((sum, p) => sum + Number(p.completion || 0), 0) / clientProjects.length)
                   : 0;
                 const statusColor = client.status === 'Active' ? '#22c55e' : client.status === 'Pending' ? '#f59e0b' : '#9ca3af';
-                const barColor = clientProjects.length > 0 ? 'var(--a-red)' : client.status === 'Active' ? '#22c55e' : '#d1d5db';
-                const barWidth = clientProjects.length > 0 ? avgCompletion : client.status === 'Active' ? 100 : 15;
+                const barColor = clientProjects.length > 0 ? 'var(--a-red)' : (client.progressColor || (client.status === 'Active' ? '#22c55e' : '#d1d5db'));
+                const barWidth = clientProjects.length > 0 ? avgCompletion : (client.progressValue ?? (client.status === 'Active' ? 100 : 15));
 
                 return (
                   <tr key={client.id} className="admin-table-row" style={{ borderBottom: '1px solid #f2f2f2' }}>
